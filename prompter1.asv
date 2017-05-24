@@ -71,7 +71,7 @@ grey = white * 0.5;
 %stimulus presentation. These parameters can be adjusted here:
 ready_time = 1;
 ready_stimulus_time = 1;
-stimulus_time = 3;
+stimulus_time = 4;
 break_time = 3;
 
 %----------------------------------------------------------------------
@@ -102,6 +102,9 @@ condMatrix = condMatrixBase; %original = condMatrix = repmat(condMatrixBase, 1, 
 shuffler = Shuffle(1:numTrials);
 condMatrixShuffled = condMatrix(:, shuffler);
 
+%Create a bell curve of durations with equal dimensions to the condition
+%matrix
+R = normrnd(stimulus_time,0.5,[1 numTrials]);
 
 %----------------------------------------------------------------------
 %                     Make a response matrix
@@ -110,23 +113,29 @@ condMatrixShuffled = condMatrix(:, shuffler);
 %name the session
 subnumber = 1; sessionnumber = 1; %these are set as defaults. In the function, turn them off
 session_name = strcat('prompt_imagined','_sub',num2str(subnumber),'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
+dir_name = 'C:\Users\shielst\ParalysedSubjectProject\Collected_data\'; %this effectively functions as the path to where things are going to be saved
 respMat = zeros(numTrials,6); %5 rows so I can display the ready time in the response matrix. The 6th row is for the session start time
+
+%ensure that there is a subject folder to save the results to. If there
+%isn't, create a subject folder
+folderexists = exist(strcat(dir_name,'/subject',num2str(subnumber)));
+if folderexists ~= 7
+    mkdir(fullfile(dir_name, (strcat('subject',num2str(subnumber)))));
+end
 
 %----------------------------------------------------------------------
 %                       Experimental loop
 %----------------------------------------------------------------------
 
 % Animation loop: we loop for the total number of trials
-%This doesn't work right now but I would like to be able to use the escape key to kill the window
 blockcounter = 1;
 
-mkdir(fullfile('../Collected_data folder', newdir));
-'(strcat(subject,num2str(subnumber))'
 respMatSession = []; %the response matrix for the session starts empty
 while 1 == 1
 shuffler = Shuffle(1:numTrials);
 condMatrixShuffled = condMatrix(:, shuffler);    
 trial = 1;
+R = normrnd(stimulus_time,1,[1 numTrials]);
 
     while trial <= numTrials
 
@@ -180,7 +189,7 @@ trial = 1;
 
         DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
         [~, timeappear] = Screen('Flip', window);
-        pause(stimulus_time) %hold for 3seconds
+        pause(R(trial)) %hold for standard distribution of 5secs
         timedisappear = GetSecs;
 
         %fill the response matrix
@@ -211,12 +220,15 @@ DrawFormattedText(window, 'Round Finished \n\n Press Any Key To Start the next r
     'center', 'center', black);
 Screen('Flip', window);
 
-%write to CSV and collate data
+%write to CSV and collate data. Take each block as a just in case
 block_name = strcat(session_name,'_block',num2str(blockcounter)); %name the last block
-csvwrite(strcat('C:\Users\shielst\ParalysedSubjectProject\Collected_data\','subject',num2str(subnumber),'\',block_name,'.csv'),respMat);
+csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',block_name,'.csv'),respMat);
 respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
+
+%collect the data from the session so far. This is the data I will
+%hopefully use
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
-csvwrite(session_name,respMatSession);
+csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',session_name,'.csv'),respMatSession);
 blockcounter = blockcounter + 1;
 KbStrokeWait; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
 

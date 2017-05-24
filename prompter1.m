@@ -9,7 +9,8 @@
 %information column. In its current state, each trial lasts 8s. A block is
 %composed of 42 trials with 6 trials per word. At the end of the 42 trials
 %the code will pause. Pressing a key will start a new block. If you want to
-%exit press and hold the escape key as it is checked each trial. 
+%exit press and hold the escape key as it is checked each trial. If you
+%just want to end the block, hold the F12 key during this checking interval
 
 %The response matrix produces 6 fields, the first 2 correspond to the
 %appearance and disappearance times of the ready prompt. The 3rd
@@ -71,7 +72,7 @@ grey = white * 0.5;
 %stimulus presentation. These parameters can be adjusted here:
 ready_time = 1;
 ready_stimulus_time = 1;
-stimulus_time = 3;
+stimulus_time = 4;
 break_time = 3;
 
 %----------------------------------------------------------------------
@@ -83,7 +84,7 @@ wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right 
 %rgbColors = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1];
 
 %Set Text Size
-Screen('Preference', 'DefaultFontSize', 200) %Font Size
+Screen('Preference', 'DefaultFontSize', 150); %Font Size
 
 % Make the matrix which will determine our condition combinations
 condMatrixBase = sort(repmat(1:6, 1, max(length(wordList)))); % original = condMatrixBase = sort(repmat(1:length(wordList), 1, max(length(wordList))));
@@ -102,6 +103,9 @@ condMatrix = condMatrixBase; %original = condMatrix = repmat(condMatrixBase, 1, 
 shuffler = Shuffle(1:numTrials);
 condMatrixShuffled = condMatrix(:, shuffler);
 
+%Create a bell curve of durations with equal dimensions to the condition
+%matrix
+R = normrnd(stimulus_time,0.5,[1 numTrials]);
 
 %----------------------------------------------------------------------
 %                     Make a response matrix
@@ -132,6 +136,7 @@ while 1 == 1
 shuffler = Shuffle(1:numTrials);
 condMatrixShuffled = condMatrix(:, shuffler);    
 trial = 1;
+R = normrnd(stimulus_time,1,[1 numTrials]);
 
     while trial <= numTrials
 
@@ -147,6 +152,7 @@ trial = 1;
         % If this is the first trial we present a start screen and wait for a
         % key-press
         if trial == 1
+            Screen('TextSize', window, 80);
             DrawFormattedText(window, 'Imagine the movement \n\n Press Any Key To Begin',...
                 'center', 'center', black);
             Screen('Flip', window);
@@ -155,7 +161,7 @@ trial = 1;
 
         % Flip again to sync us to the vertical retrace at the same time as
         % drawing our fixation point
-        Screen('DrawDots', window, [xCenter; yCenter], 10, black, [], 2);
+        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         Screen('Flip', window);
         pause(break_time)
 
@@ -164,7 +170,7 @@ trial = 1;
         % time stamp
 
         % Draw the fixation point
-        Screen('DrawDots', window, [xCenter; yCenter], 10, black, [], 2);
+        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         % Flip to the screen
         [~, time] = Screen('Flip', window);
 
@@ -179,13 +185,13 @@ trial = 1;
         pause(ready_time)
 
         % Draw the fixation point
-        Screen('DrawDots', window, [xCenter; yCenter], 10, black, [], 2);
+        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         [~, readydisappear] = Screen('Flip', window);
         pause(ready_stimulus_time)
 
         DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
         [~, timeappear] = Screen('Flip', window);
-        pause(stimulus_time) %hold for 3seconds
+        pause(R(trial)) %hold for standard distribution of the stimulus time
         timedisappear = GetSecs;
 
         %fill the response matrix
@@ -195,12 +201,17 @@ trial = 1;
         respMat(trial, 4) = timeappear;
         respMat(trial, 5) = timedisappear;
 
-        Screen('DrawDots', window, [xCenter; yCenter], 10, black, [], 2);
+        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         Screen('Flip', window);
 
-        [keyIsDown,secs,keyCode] = KbCheck; %Check to make sure the escape key hasn't been pressed
-        if KbCheck > 0
+        [keyIsDown,secs,keyCode] = KbCheck; %If a key is pressed during the disappearance of the stimulus, kill the screen
+        KbEscape = KbName('escape'); %this will kill the prompting window
+        KbF12 = KbName ('f12'); %this will just end the block prematurely
+        
+        if keyCode(KbEscape) > 0
             sca
+            break
+        elseif keyCode(KbF12) > 0
             break
         end
 
@@ -212,6 +223,7 @@ respMat(1,6) = tBlockStart; %place the block start time in the top right corner 
 respMat(2,6) = blockcounter; %place a number indicating which session this block corresponds to
 % End of experiment screen. We clear the screen once they have made their
 % response
+Screen('TextSize', window, 80);
 DrawFormattedText(window, 'Round Finished \n\n Press Any Key To Start the next round',...
     'center', 'center', black);
 Screen('Flip', window);
