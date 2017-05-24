@@ -62,7 +62,7 @@ global filtType;
 
 numChannels = 32;
 filtType = 'BPF';
-addpath('D:\GitSandBox\tmsiMatlabInterface\eeglab13_6_5b');
+addpath('C:\Users\shielst\ParalysedSubjectProject\tmsiMatlabInterface-clone\eeglab13_6_5b');
 eeglab;
 close;
 channelList = {'Ch1', 'Ch2', 'Ch3', 'Ch4', 'Ch5', 'Ch6', 'Ch7', 'Ch8', 'Ch9', 'Ch10',...
@@ -143,8 +143,9 @@ channelArray = 1:32;
 % uiwait(handles.figure1);
 
 clust = parcluster('local');
-N = 4;
-j = batch(clust, @prompterlive, 1, {3, 3}, 'Pool', 1);
+subnumber = 1; sessionnumber = 1; stimulus_time = 4;
+wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
+j = batch(clust, @prompter1function, 1, {subnumber,sessionnumber,stimulus_time,wordList}, 'Pool', 1);
 
 
 
