@@ -1,5 +1,7 @@
-function prompterrunning = prompter2-prompter1clone
+%main change is to try to use the global variable - rec
 
+
+function trigger = prompter1function2(subnumber,sessionnumber,stimulus_time,wordList)
 
 %prompter1 is heavily dependent on PsychToolBox and you need to make sure
 %this is installed correctly. If using a laptop with an integrated and
@@ -12,7 +14,8 @@ function prompterrunning = prompter2-prompter1clone
 %information column. In its current state, each trial lasts 8s. A block is
 %composed of 42 trials with 6 trials per word. At the end of the 42 trials
 %the code will pause. Pressing a key will start a new block. If you want to
-%exit press and hold the escape key as it is checked each trial. 
+%exit press and hold the escape key as it is checked each trial. If you
+%just want to end the block, hold the F12 key during this checking interval
 
 %The response matrix produces 6 fields, the first 2 correspond to the
 %appearance and disappearance times of the ready prompt. The 3rd
@@ -25,10 +28,8 @@ function prompterrunning = prompter2-prompter1clone
 
 % Clear the workspace
 sca;
-close all;
-clearvars;
 
-
+global rec
 % Setup PTB with some default values
 PsychDefaultSetup(2);
 %Screen('Preference', 'SkipSyncTests', 1);
@@ -74,23 +75,23 @@ grey = white * 0.5;
 %stimulus presentation. These parameters can be adjusted here:
 ready_time = 1;
 ready_stimulus_time = 1;
-stimulus_time = 3;
+%stimulus_time = 4;
 break_time = 3;
 
 %----------------------------------------------------------------------
 %                     Colors in words and RGB
 %----------------------------------------------------------------------
 
-% We are going to use three colors for this demo. Red, Green and blue.
-wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
+%wordList should come from the function call
+%wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
 %rgbColors = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1];
 
-% Make the matrix which will determine our condition combinations
-condMatrixBase = sort(repmat(1:6, 1, max(length(wordList)))); % original = condMatrixBase = sort(repmat(1:length(wordList), 1, max(length(wordList))));
+%Set Text Size
+Screen('Preference', 'DefaultFontSize', 150); %Font Size
 
-% Number of trials per condition. We set this to one for this demo, to give
-% us a total of 9 trials.
-trialsPerCondition = 6; % 6 trials per class gives a total of 42 trials per block. Adjust to 7 if you drop a trial type
+% Make the matrix which will determine our condition combinations
+trialsPerCondition = 6;  % 6 trials per class gives a total of 42 trials per block. Adjust to 7 if you drop a trial type
+condMatrixBase = sort(repmat(1:trialsPerCondition, 1, max(length(wordList)))); % original = condMatrixBase = sort(repmat(1:length(wordList), 1, max(length(wordList))));
 
 % Duplicate the condition matrix to get the full number of trials
 condMatrix = condMatrixBase; %original = condMatrix = repmat(condMatrixBase, 1, trialsPerCondition);
@@ -100,27 +101,40 @@ condMatrix = condMatrixBase; %original = condMatrix = repmat(condMatrixBase, 1, 
 
 % Randomise the conditions
 shuffler = Shuffle(1:numTrials);
-condMatrixShuffled = condMatrix(:, shuffler);
-
 
 %----------------------------------------------------------------------
 %                     Make a response matrix
 %----------------------------------------------------------------------
 
+%name the session
+%subnumber = 1; sessionnumber = 1; %these are set as defaults. On in the
+%script, off in the function
+session_name = strcat('prompt_imagined','_sub',num2str(subnumber),'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
+dir_name = 'C:\Users\shielst\ParalysedSubjectProject\Collected_data\'; %this effectively functions as the path to where things are going to be saved
 respMat = zeros(numTrials,6); %5 rows so I can display the ready time in the response matrix. The 6th row is for the session start time
+
+%ensure that there is a subject folder to save the results to. If there
+%isn't, create a subject folder
+folderexists = exist(strcat(dir_name,'/subject',num2str(subnumber)));
+if folderexists ~= 7
+    mkdir(fullfile(dir_name, (strcat('subject',num2str(subnumber)))));
+end
 
 %----------------------------------------------------------------------
 %                       Experimental loop
 %----------------------------------------------------------------------
 
 % Animation loop: we loop for the total number of trials
-%This doesn't work right now but I would like to be able to use the escape key to kill the window
-sessioncounter = 1;
+blockcounter = 1;
+
 respMatSession = []; %the response matrix for the session starts empty
 while 1 == 1
 shuffler = Shuffle(1:numTrials);
 condMatrixShuffled = condMatrix(:, shuffler);    
 trial = 1;
+%Create a bell curve of durations with equal dimensions to the condition
+%matrix
+R = normrnd(stimulus_time,1,[1 numTrials]);
 
     while trial <= numTrials
 
@@ -130,22 +144,24 @@ trial = 1;
         % The color word and the color it is drawn in
         theWord = wordList(wordNum);
 
-        % Cue to determine whether a response has been made
-        respToBeMade = true;
-
         % If this is the first trial we present a start screen and wait for a
         % key-press
         if trial == 1
+            Screen('TextSize', window, 80);
             DrawFormattedText(window, 'Imagine the movement \n\n Press Any Key To Begin',...
                 'center', 'center', black);
             Screen('Flip', window);
-            KbStrokeWait; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
-            prompterrunning = 1;
+            t = 0;
+            while rec ~= 1
+               t = t+1;
+            end
+            tBlockStart = GetSecs;
+            trigger = 1; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
         end
 
         % Flip again to sync us to the vertical retrace at the same time as
         % drawing our fixation point
-        Screen('DrawDots', window, [xCenter; yCenter], 10, black, [], 2);
+        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         Screen('Flip', window);
         pause(break_time)
 
@@ -154,13 +170,9 @@ trial = 1;
         % time stamp
 
         % Draw the fixation point
-        Screen('DrawDots', window, [xCenter; yCenter], 10, black, [], 2);
+        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         % Flip to the screen
         [~, time] = Screen('Flip', window);
-
-        if trial == 1
-            tBlockStart = GetSecs;
-        end
 
         % Draw the ready and take a time marker
 
@@ -169,13 +181,13 @@ trial = 1;
         pause(ready_time)
 
         % Draw the fixation point
-        Screen('DrawDots', window, [xCenter; yCenter], 10, black, [], 2);
+        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         [~, readydisappear] = Screen('Flip', window);
         pause(ready_stimulus_time)
 
         DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
         [~, timeappear] = Screen('Flip', window);
-        pause(stimulus_time) %hold for 3seconds
+        pause(R(trial)) %hold for standard distribution of the stimulus time
         timedisappear = GetSecs;
 
         %fill the response matrix
@@ -185,28 +197,43 @@ trial = 1;
         respMat(trial, 4) = timeappear;
         respMat(trial, 5) = timedisappear;
 
-        Screen('DrawDots', window, [xCenter; yCenter], 10, black, [], 2);
+        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         Screen('Flip', window);
 
-        [keyIsDown,secs,keyCode] = KbCheck; %Check to make sure the escape key hasn't been pressed
-        if KbCheck > 0
+        [keyIsDown,secs,keyCode] = KbCheck; %If a key is pressed during the disappearance of the stimulus, kill the screen
+        KbEscape = KbName('escape'); %this will kill the prompting window
+        KbF12 = KbName ('f12'); %this will just end the block prematurely
+        
+        if keyCode(KbEscape) > 0
             sca
+            break
+        elseif keyCode(KbF12) > 0
             break
         end
 
         trial = trial + 1;
     end
 
-respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
+%respMat(numTrials+1,:) = 10; 
 respMat(1,6) = tBlockStart; %place the block start time in the top right corner of the resp matrix
-respMat(2,6) = sessioncounter; %place a number indicating which session this block corresponds to
+respMat(2,6) = blockcounter; %place a number indicating which session this block corresponds to
 % End of experiment screen. We clear the screen once they have made their
 % response
+Screen('TextSize', window, 80);
 DrawFormattedText(window, 'Round Finished \n\n Press Any Key To Start the next round',...
     'center', 'center', black);
 Screen('Flip', window);
+
+%write to CSV and collate data. Take each block as a just in case
+block_name = strcat(session_name,'_block',num2str(blockcounter)); %name the last block
+csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',block_name,'.csv'),respMat);
+respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
+
+%collect the data from the session so far. This is the data I will
+%hopefully use
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
-sessioncounter = sessioncounter + 1;
+csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',session_name,'.csv'),respMatSession);
+blockcounter = blockcounter + 1;
 KbStrokeWait; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
 
 end
