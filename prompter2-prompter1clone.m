@@ -1,3 +1,6 @@
+function prompterrunning = prompter2-prompter1clone
+
+
 %prompter1 is heavily dependent on PsychToolBox and you need to make sure
 %this is installed correctly. If using a laptop with an integrated and
 %dedicated GPU, consider turning off the dedicated GPU as this has caused
@@ -82,9 +85,6 @@ break_time = 3;
 wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
 %rgbColors = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1];
 
-%Set Text Size
-Screen('Preference', 'DefaultFontSize', 200) %Font Size
-
 % Make the matrix which will determine our condition combinations
 condMatrixBase = sort(repmat(1:6, 1, max(length(wordList)))); % original = condMatrixBase = sort(repmat(1:length(wordList), 1, max(length(wordList))));
 
@@ -107,26 +107,15 @@ condMatrixShuffled = condMatrix(:, shuffler);
 %                     Make a response matrix
 %----------------------------------------------------------------------
 
-%name the session
-subnumber = 1; sessionnumber = 1; %these are set as defaults. In the function, turn them off
-session_name = strcat('prompt_imagined','_sub',num2str(subnumber),'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
-dir_name = 'C:\Users\shielst\ParalysedSubjectProject\Collected_data\'; %this effectively functions as the path to where things are going to be saved
 respMat = zeros(numTrials,6); %5 rows so I can display the ready time in the response matrix. The 6th row is for the session start time
-
-%ensure that there is a subject folder to save the results to. If there
-%isn't, create a subject folder
-folderexists = exist(strcat(dir_name,'/subject',num2str(subnumber)));
-if folderexists ~= 7
-    mkdir(fullfile(dir_name, (strcat('subject',num2str(subnumber)))));
-end
 
 %----------------------------------------------------------------------
 %                       Experimental loop
 %----------------------------------------------------------------------
 
 % Animation loop: we loop for the total number of trials
-blockcounter = 1;
-
+%This doesn't work right now but I would like to be able to use the escape key to kill the window
+sessioncounter = 1;
 respMatSession = []; %the response matrix for the session starts empty
 while 1 == 1
 shuffler = Shuffle(1:numTrials);
@@ -151,6 +140,7 @@ trial = 1;
                 'center', 'center', black);
             Screen('Flip', window);
             KbStrokeWait; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
+            prompterrunning = 1;
         end
 
         % Flip again to sync us to the vertical retrace at the same time as
@@ -207,26 +197,19 @@ trial = 1;
         trial = trial + 1;
     end
 
-%respMat(numTrials+1,:) = 10; 
+respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
 respMat(1,6) = tBlockStart; %place the block start time in the top right corner of the resp matrix
-respMat(2,6) = blockcounter; %place a number indicating which session this block corresponds to
+respMat(2,6) = sessioncounter; %place a number indicating which session this block corresponds to
 % End of experiment screen. We clear the screen once they have made their
 % response
 DrawFormattedText(window, 'Round Finished \n\n Press Any Key To Start the next round',...
     'center', 'center', black);
 Screen('Flip', window);
-
-%write to CSV and collate data. Take each block as a just in case
-block_name = strcat(session_name,'_block',num2str(blockcounter)); %name the last block
-csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',block_name,'.csv'),respMat);
-respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
-
-%collect the data from the session so far. This is the data I will
-%hopefully use
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
-csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',session_name,'.csv'),respMatSession);
-blockcounter = blockcounter + 1;
+sessioncounter = sessioncounter + 1;
 KbStrokeWait; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
 
 end
 sca;
+
+end
