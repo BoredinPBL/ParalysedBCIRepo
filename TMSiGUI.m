@@ -43,8 +43,6 @@ else
 end
 % End initialization code - DO NOT EDIT
 
- %live = 0;
- %F = parfeval(gcp(),@prompterlive,live,3,3);
 
 % --- Executes just before TMSiGUI is made visible.
 function TMSiGUI_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -61,6 +59,8 @@ global numChannels;
 global filtType;
 global subnumber;
 global sessionnumber;
+global eventnum;
+
 
 numChannels = 32;
 filtType = 'BPF';
@@ -146,7 +146,7 @@ channelArray = 1:32;
 % uiwait(handles.figure1);
 
 clust = parcluster('local');
-subnumber = 1; sessionnumber = 1; stimulus_time = 4;
+subnumber = 1; sessionnumber = 1; stimulus_time = 4; eventnum = 1;
 wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
 j = batch(clust, @prompter1function, 1, {subnumber,sessionnumber,stimulus_time,wordList}, 'Pool', 1);
 

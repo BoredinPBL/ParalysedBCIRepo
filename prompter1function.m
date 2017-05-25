@@ -14,6 +14,10 @@ function trigger = prompter1function(subnumber,sessionnumber,stimulus_time,wordL
 %exit press and hold the escape key as it is checked each trial. If you
 %just want to end the block, hold the F12 key during this checking interval
 
+%This code is initiated by F8, ideally in sync with the recording program.
+%The TMSi code has a wait for F8 that needs to be ended after you press
+%save
+
 %The response matrix produces 6 fields, the first 2 correspond to the
 %appearance and disappearance times of the ready prompt. The 3rd
 %corresponds to the word number that was displayed. The 4th and 5th
@@ -147,7 +151,14 @@ R = normrnd(stimulus_time,1,[1 numTrials]);
             DrawFormattedText(window, 'Imagine the movement \n\n Press Any Key To Begin',...
                 'center', 'center', black);
             Screen('Flip', window);
-            KbStrokeWait; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
+            KbF8 = KbName('f8');
+            while 1 == 1
+                [~,~,keyCode] = KbCheck;
+                if keyCode(KbF8) > 0
+                    break
+                end
+                pause(0.01)
+            end
         end
 
         % Flip again to sync us to the vertical retrace at the same time as

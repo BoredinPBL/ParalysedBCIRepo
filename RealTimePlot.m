@@ -437,6 +437,14 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global startRecBtn;
             global stopRecBtn;
             global saveBtn;
+            KbF8 = KbName('f8');
+            while 1 == 1
+                [keyIsDown,secs,keyCode] = KbCheck;
+                if keyCode(KbF8) > 0
+                    break
+                end
+                pause(0.01)
+            end
             rec = 1;
             set(startRecBtn,'Enable','off');
             set(stopRecBtn,'Enable','on');
@@ -480,38 +488,25 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global saveBtn;
             global subnumber;
             global sessionnumber;
+            global eventnum
             
-            x = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber));
-            %Thomas was here  %inputdlg('Save Recording As (.poly5)',
-                                                  %'File Name', [1 50]);
-            if isempty(x)
-                 
-            else if strcmp(x{1}, '')
-                    errordlg('Invalid Name','File Error');
-                else
-                    y = strcat(x{1}, '.Poly5');
-                    if exist(y, 'file')
-                        choice = questdlg('File name already exists! Would you like to replace the existing file?', 'Yes', 'No');
-                        % Handle response
-                        switch choice
-                            case 'Yes'
-                                fileName = y;
-                                count = 0;
-                                set(startRecBtn,'Enable','on');
-                                set(saveBtn,'Enable','off');
-                                
-                            case 'No'
-                                
-                        end
-                    else
-                        fileName = y;
-                        count = 0;
-                        set(startRecBtn,'Enable','on');
-                        set(saveBtn,'Enable','off');
-                    end
-                    
-                end
-            end
+            x = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber),'');
+            %inputdlg('Save Recording As (.poly5)','File Name', [1 50]);
+            
+            
+                                                  
+            y = strcat(x, '.Poly5');
+            
+%             if exist(y, 'file')
+%                y = strcat(x,eventnum,'.Poly5'); %doesn't work currently,
+%                but hopefully we can prevent the file from being
+%                overwritten
+%                eventnum = eventnum + 1;
+%             end
+            fileName = y;
+            count = 0;
+            set(startRecBtn,'Enable','on');
+            set(saveBtn,'Enable','off');
             
         end
         

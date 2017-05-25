@@ -1,5 +1,4 @@
-%main change is to try to use the global variable - rec
-function trigger = prompter1function2(subnumber,sessionnumber,stimulus_time,wordList)
+function trigger = prompter1function(subnumber,sessionnumber,stimulus_time,wordList)
 
 %prompter1 is heavily dependent on PsychToolBox and you need to make sure
 %this is installed correctly. If using a laptop with an integrated and
@@ -26,8 +25,6 @@ function trigger = prompter1function2(subnumber,sessionnumber,stimulus_time,word
 
 % Clear the workspace
 sca;
-
-global rec
 
 % Setup PTB with some default values
 PsychDefaultSetup(2);
@@ -146,19 +143,13 @@ R = normrnd(stimulus_time,1,[1 numTrials]);
         % If this is the first trial we present a start screen and wait for a
         % key-press
         if trial == 1
-                Screen('TextSize', window, 80);
-                DrawFormattedText(window, 'Imagine the movement \n\n Press Any Key To Begin',...
-                    'center', 'center', black);
-                Screen('Flip', window);
-                KbF8 = KbName('f8');
-                while 1 == 1
-                    [keyIsDown,secs,keyCode] = KbCheck;
-                     kpause(0.01)
-                       if keyCode(KbF8) > 0
-                            break
-                       end
-                end
+            Screen('TextSize', window, 80);
+            DrawFormattedText(window, 'Imagine the movement \n\n Press Any Key To Begin',...
+                'center', 'center', black);
+            Screen('Flip', window);
+            KbStrokeWait; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
         end
+
         % Flip again to sync us to the vertical retrace at the same time as
         % drawing our fixation point
         Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
@@ -173,6 +164,11 @@ R = normrnd(stimulus_time,1,[1 numTrials]);
         Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         % Flip to the screen
         [~, time] = Screen('Flip', window);
+
+        if trial == 1
+            tBlockStart = GetSecs;
+            trigger = 1;
+        end
 
         % Draw the ready and take a time marker
 
