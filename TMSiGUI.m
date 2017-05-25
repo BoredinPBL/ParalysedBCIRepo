@@ -59,6 +59,8 @@ global channelList;
 global chanPopupHandles;
 global numChannels;
 global filtType;
+global subnumber;
+global sessionnumber;
 
 numChannels = 32;
 filtType = 'BPF';
@@ -135,6 +137,7 @@ set(handles.radiobutton5,'Value',0)
 set(handles.edit1,'Enable','off')
 set(handles.edit2,'Enable','off')
 set(handles.popupmenu1,'Enable','off')
+
 set(handles.radiobutton8, 'value', 1);
 set(handles.radiobutton9, 'value', 0);
 set(handles.radiobutton10, 'value', 0);
