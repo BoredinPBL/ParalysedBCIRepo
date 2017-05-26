@@ -174,7 +174,7 @@ end
         % key-press
         if trial == 1
             Screen('TextSize', window, 80);
-            DrawFormattedText(window, 'Imagine the movement \n\n Press Any Key To Begin',...
+            DrawFormattedText(window, 'Imagine the movement \n\n Press F8 To Begin',...
                 'center', 'center', black);
             Screen('Flip', window);
             KbF8 = KbName('f8');
@@ -214,19 +214,19 @@ end
         
         if mathmodeactive == true
             if wordNum == mathword
-                DrawFormattedText(window, strcat(num2str(randMat(q,1)),'+',num2str(randMat(q,2)),'='), 'center', 'center', black); %draw the word from the word matrix
+                DrawFormattedText(window, strcat('Calculate', '\n\n',num2str(randMat(q,1)),'+',num2str(randMat(q,2)),'='), 'center', 'center', black); %draw the word from the word matrix
                 [~, timeappear] = Screen('Flip', window);
                 pause(R(trial)) %hold for standard distribution of the stimulus time
                 q = q+1;
                 timedisappear = GetSecs;
             else
-                DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
+                DrawFormattedText(window, strcat('Imagine Moving', '\n\n', char(theWord)), 'center', 'center', black); %draw the word from the word matrix
                 [~, timeappear] = Screen('Flip', window);
                 pause(R(trial)) %hold for standard distribution of the stimulus time
                 timedisappear = GetSecs;
             end
         else
-            DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
+            DrawFormattedText(window, strcat('Imagine Moving', '\n\n', char(theWord)), 'center', 'center', black); %draw the word from the word matrix
             [~, timeappear] = Screen('Flip', window);
             pause(R(trial)) %hold for standard distribution of the stimulus time
             timedisappear = GetSecs;
@@ -256,7 +256,6 @@ end
         trial = trial + 1;
     end
 
-%respMat(numTrials+1,:) = 10; 
 respMat(1,6) = tBlockStart; %place the block start time in the top right corner of the resp matrix
 respMat(2,6) = blockcounter; %place a number indicating which session this block corresponds to
 
