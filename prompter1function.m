@@ -1,4 +1,4 @@
-function trigger = prompter1function(subnumber,sessionnumber,stimulus_time,wordList)
+function trigger = prompter1function(subnumber,sessionnumber,startblock,stimulus_time,wordList)
 
 %prompter1 is heavily dependent on PsychToolBox and you need to make sure
 %this is installed correctly. If using a laptop with an integrated and
@@ -26,6 +26,22 @@ function trigger = prompter1function(subnumber,sessionnumber,stimulus_time,wordL
 %number of that block. All values are in system time. Each block is
 %separated by a row of 10s to show that the results are no longer
 %continuous. 
+
+%input names:
+%subnumber = the subject number, this defines the folder where the timing
+%information wil be saved
+%sessionnumber = the session number with this subject
+%startblock = in the case of having to open and close the program multiple
+%times, you can define what number block you are starting with. This should
+%prevent it from saving over old version
+%stimulustime = the median stimulus time, there is a standard deviation in
+%the display time
+%wordList = the list of words, needs to be a matrix of strings. If one
+%corresponds to 'Think', the program will display a random maths question
+%instead of the word 'Think'
+
+%this version has an added function. If a word in the word list corresponds
+%to the word 'Think', the program will randomly generate a maths problem
 
 % Clear the workspace
 sca;
@@ -86,24 +102,34 @@ break_time = 3;
 %wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
 %rgbColors = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1];
 
+
+%If the word 'Think' is in the word list, activate mathmode
+mathmodeactive = false;
+for q = 1:length(wordList)
+    mathtime = strcmp('Think',wordList(q));
+    if mathtime == 1
+        mathmodeactive = true;
+        mathword = q;
+    end
+end
+
+
+
 %Set Text Size
 Screen('Preference', 'DefaultFontSize', 150); %Font Size
 
 % Make the matrix which will determine our condition combinations
 trialsPerCondition = 6;  % 6 trials per class gives a total of 42 trials per block. Adjust to 7 if you drop a trial type
-condMatrixBase = sort(repmat(1:trialsPerCondition, 1, max(length(wordList)))); % original = condMatrixBase = sort(repmat(1:length(wordList), 1, max(length(wordList))));
-
-% Duplicate the condition matrix to get the full number of trials
-condMatrix = condMatrixBase; %original = condMatrix = repmat(condMatrixBase, 1, trialsPerCondition);
+condMatrixBase = sort(repmat(1:max(length(wordList)), 1,trialsPerCondition )); % original = condMatrixBase = sort(repmat(1:length(wordList), 1, max(length(wordList))));
 
 % Get the size of the matrix
-[~, numTrials] = size(condMatrix);
+[~, numTrials] = size(condMatrixBase);
 
 % Randomise the conditions
 shuffler = Shuffle(1:numTrials);
 
 %----------------------------------------------------------------------
-%                     Make a response matrix
+%                     Make a response matrix and name the folder
 %----------------------------------------------------------------------
 
 %name the session
@@ -111,7 +137,7 @@ shuffler = Shuffle(1:numTrials);
 %script, off in the function
 session_name = strcat('prompt_imagined','_sub',num2str(subnumber),'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
 dir_name = 'C:\Users\shielst\ParalysedSubjectProject\Collected_data\'; %this effectively functions as the path to where things are going to be saved
-respMat = zeros(numTrials,6); %5 rows so I can display the ready time in the response matrix. The 6th row is for the session start time
+respMat = zeros(numTrials,6); %6 rows so I can display the ready time in the response matrix. The 6th row is for the session start time
 
 %ensure that there is a subject folder to save the results to. If there
 %isn't, create a subject folder
@@ -125,17 +151,21 @@ end
 %----------------------------------------------------------------------
 
 % Animation loop: we loop for the total number of trials
-blockcounter = 1;
+blockcounter = startblock;
 
 respMatSession = []; %the response matrix for the session starts empty
 while 1 == 1
 shuffler = Shuffle(1:numTrials);
-condMatrixShuffled = condMatrix(:, shuffler);    
+condMatrixShuffled = condMatrixBase(:, shuffler);    
 trial = 1;
 %Create a bell curve of durations with equal dimensions to the condition
 %matrix
 R = normrnd(stimulus_time,1,[1 numTrials]);
-
+q = 1; %reset the math counter
+%if mathmode is active, generate a matrix of random numbers
+if mathmodeactive == true
+    randMat = randi(9,[trialsPerCondition, 2]);
+end
     while trial <= numTrials
 
         % Word and color number
@@ -191,11 +221,26 @@ R = normrnd(stimulus_time,1,[1 numTrials]);
         Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         [~, readydisappear] = Screen('Flip', window);
         pause(ready_stimulus_time)
-
-        DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
-        [~, timeappear] = Screen('Flip', window);
-        pause(R(trial)) %hold for standard distribution of the stimulus time
-        timedisappear = GetSecs;
+        
+        if mathmodeactive == true
+            if wordNum == mathword
+                DrawFormattedText(window, strcat(num2str(randMat(q,1)),'+',num2str(randMat(q,2)),'='), 'center', 'center', black); %draw the word from the word matrix
+                [~, timeappear] = Screen('Flip', window);
+                pause(R(trial)) %hold for standard distribution of the stimulus time
+                q = q+1;
+                timedisappear = GetSecs;
+            else
+                DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
+                [~, timeappear] = Screen('Flip', window);
+                pause(R(trial)) %hold for standard distribution of the stimulus time
+                timedisappear = GetSecs;
+            end
+        else
+            DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
+            [~, timeappear] = Screen('Flip', window);
+            pause(R(trial)) %hold for standard distribution of the stimulus time
+            timedisappear = GetSecs;
+        end
 
         %fill the response matrix
         respMat(trial, 1) = readyappear;

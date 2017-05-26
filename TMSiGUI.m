@@ -146,9 +146,9 @@ channelArray = 1:32;
 % uiwait(handles.figure1);
 
 clust = parcluster('local');
-subnumber = 1; sessionnumber = 1; stimulus_time = 4; eventnum = 1;
+subnumber = 1; sessionnumber = 1; stimulus_time = 4; eventnum = 1; startblock = 1;
 wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
-j = batch(clust, @prompter1function, 1, {subnumber,sessionnumber,stimulus_time,wordList}, 'Pool', 1);
+j = batch(clust, @prompter1function, 1, {subnumber,sessionnumber,startblock,stimulus_time,wordList}, 'Pool', 1);
 
 
 
