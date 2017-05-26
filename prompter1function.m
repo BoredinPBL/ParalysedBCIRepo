@@ -77,16 +77,6 @@ grey = white * 0.5;
 %                       Timing Information
 %----------------------------------------------------------------------
 
-% Interstimulus interval time in seconds and frames
-%isiTimeSecs = 5;
-%isiTimeFrames = round(isiTimeSecs / ifi);
-
-%nominalFrameRate = Screen('NominalFrameRate', window);
-%second = nominalFrameRate;
-
-% Number of frames to wait before re-drawing
-%waitframes = 1;
-
 %in this script the pause function is used to control the timing of
 %stimulus presentation. These parameters can be adjusted here:
 ready_time = 1;
@@ -100,8 +90,6 @@ break_time = 3;
 
 %wordList should come from the function call
 %wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
-%rgbColors = [1 0 0; 0 1 0; 0 0 1; 0 1 1; 1 0 1];
-
 
 %If the word 'Think' is in the word list, activate mathmode
 mathmodeactive = false;
@@ -113,8 +101,6 @@ for q = 1:length(wordList)
     end
 end
 
-
-
 %Set Text Size
 Screen('Preference', 'DefaultFontSize', 150); %Font Size
 
@@ -124,9 +110,6 @@ condMatrixBase = sort(repmat(1:max(length(wordList)), 1,trialsPerCondition )); %
 
 % Get the size of the matrix
 [~, numTrials] = size(condMatrixBase);
-
-% Randomise the conditions
-shuffler = Shuffle(1:numTrials);
 
 %----------------------------------------------------------------------
 %                     Make a response matrix and name the folder
@@ -143,6 +126,7 @@ respMat = zeros(numTrials,6); %6 rows so I can display the ready time in the res
 %isn't, create a subject folder
 folderexists = exist(strcat(dir_name,'/subject',num2str(subnumber)));
 if folderexists ~= 7
+    fold_name = strcat('subject',num2str(subnumber));
     mkdir(fullfile(dir_name, (strcat('subject',num2str(subnumber)))));
 end
 
@@ -165,6 +149,18 @@ q = 1; %reset the math counter
 %if mathmode is active, generate a matrix of random numbers
 if mathmodeactive == true
     randMat = randi(9,[trialsPerCondition, 2]);
+end
+
+%detect whether a poly5 file already exists, if so, move it
+name = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber),'.Poly5');                             
+if exist(name, 'file') 
+    nopoly5 = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber));
+    nopoly5 = strcat(nopoly5, '_block' ,num2str(blockcounter-1)); %this can potentially give a file a zero, if this is happening you have stuffed up somewhere.
+    newname = strcat(nopoly5, '.Poly5');
+    %this code should move the poly5 file produced by TMSI to the folder
+    %where the prompting code is stored and prevent me from saving over it
+    %:D
+    movefile(name, strcat(dir_name, fold_name, '\', newname)) %this line hasn't been validated in the lab but it should work
 end
     while trial <= numTrials
 
@@ -191,15 +187,9 @@ end
             end
         end
 
-        % Flip again to sync us to the vertical retrace at the same time as
-        % drawing our fixation point
         Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
         Screen('Flip', window);
         pause(break_time)
-
-        % Now we present the isi interval with fixation point minus one frame
-        % because we presented the fixation point once already when getting a
-        % time stamp
 
         % Draw the fixation point
         Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
@@ -269,8 +259,8 @@ end
 %respMat(numTrials+1,:) = 10; 
 respMat(1,6) = tBlockStart; %place the block start time in the top right corner of the resp matrix
 respMat(2,6) = blockcounter; %place a number indicating which session this block corresponds to
-% End of experiment screen. We clear the screen once they have made their
-% response
+
+% End of round screen. 
 Screen('TextSize', window, 80);
 DrawFormattedText(window, 'Round Finished \n\n Press Any Key To Start the next round',...
     'center', 'center', black);
@@ -286,7 +276,7 @@ respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and tha
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
 csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',session_name,'.csv'),respMatSession);
 blockcounter = blockcounter + 1;
-KbStrokeWait; %this has been switched to pause function for beta testing. Make sure to switch it back to KbStrokeWait
+KbStrokeWait; 
 
 end
 sca;
