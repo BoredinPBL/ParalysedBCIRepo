@@ -1,4 +1,4 @@
-function trigger = prompter1function(subnumber,sessionnumber,startblock,stimulus_time,wordList)
+function trigger = prompter1function(subnumber,sessionnumber,stimulus_time,wordList,imaginedoractive)
 
 %prompter1 is heavily dependent on PsychToolBox and you need to make sure
 %this is installed correctly. If using a laptop with an integrated and
@@ -101,6 +101,17 @@ for q = 1:length(wordList)
     end
 end
 
+if strcmp(imaginedoractive,'imagined')
+    Instruction = 'Imagine the Movement';
+elseif strcmp(imaginedoractive,'active')
+    Instruction = 'Follow the Instruction';
+else
+    fprintf('you need to set the imagined or active field, defaulting to imagined');
+    Instruction = 'Imagine the Movement';
+end
+    
+    
+
 %Set Text Size
 Screen('Preference', 'DefaultFontSize', 150); %Font Size
 
@@ -115,19 +126,20 @@ condMatrixBase = sort(repmat(1:max(length(wordList)), 1,trialsPerCondition )); %
 %                     Make a response matrix and name the folder
 %----------------------------------------------------------------------
 
+respMat = zeros(numTrials,6); %6 rows so I can display the ready time in the response matrix. The 6th row is for the session start time
+
 %name the session
 %subnumber = 1; sessionnumber = 1; %these are set as defaults. On in the
 %script, off in the function
-session_name = strcat('prompt_imagined','_sub',num2str(subnumber),'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
-dir_name = 'C:\Users\shielst\ParalysedSubjectProject\Collected_data\'; %this effectively functions as the path to where things are going to be saved
-respMat = zeros(numTrials,6); %6 rows so I can display the ready time in the response matrix. The 6th row is for the session start time
+session_name = strcat('prompttiming_', imaginedoractive,'_sub',num2str(subnumber),'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
+dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %this effectively functions as the path to where things are going to be saved
+
 
 %ensure that there is a subject folder to save the results to. If there
 %isn't, create a subject folder
-folderexists = exist(strcat(dir_name,'/subject',num2str(subnumber)));
-if folderexists ~= 7
-    fold_name = strcat('subject',num2str(subnumber));
-    mkdir(fullfile(dir_name, (strcat('subject',num2str(subnumber)))));
+folder_name = strcat('subject',num2str(subnumber)); %generate a string representing the folder name
+if exist(strcat(dir_name,folder_name), 'dir') %check for an existing folder
+    mkdir(fullfile(dir_name, (folder_name))); %if one doesn't exist already, generate the folder
 end
 
 %----------------------------------------------------------------------
@@ -135,7 +147,6 @@ end
 %----------------------------------------------------------------------
 
 % Animation loop: we loop for the total number of trials
-blockcounter = startblock;
 
 respMatSession = []; %the response matrix for the session starts empty
 while 1 == 1
@@ -151,17 +162,17 @@ if mathmodeactive == true
     randMat = randi(9,[trialsPerCondition, 2]);
 end
 
-%detect whether a poly5 file already exists, if so, move it
-name = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber),'.Poly5');                             
-if exist(name, 'file') 
-    nopoly5 = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber));
-    nopoly5 = strcat(nopoly5, '_block' ,num2str(blockcounter-1)); %this can potentially give a file a zero, if this is happening you have stuffed up somewhere.
-    newname = strcat(nopoly5, '.Poly5');
-    %this code should move the poly5 file produced by TMSI to the folder
-    %where the prompting code is stored and prevent me from saving over it
-    %:D
-    movefile(name, strcat(dir_name, fold_name, '\', newname)) %this line hasn't been validated in the lab but it should work
-end
+% %detect whether a poly5 file already exists, if so, move it
+% name = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber),'.Poly5');                             
+% if exist(name, 'file') 
+%     nopoly5 = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber));
+%     nopoly5 = strcat(nopoly5, '_block' ,num2str(blockcounter-1)); %this can potentially give a file a zero, if this is happening you have stuffed up somewhere.
+%     newname = strcat(nopoly5, '.Poly5');
+%     %this code should move the poly5 file produced by TMSI to the folder
+%     %where the prompting code is stored and prevent me from saving over it
+%     %:D
+%     movefile(name, strcat(dir_name, fold_name, '\', newname)) %this line hasn't been validated in the lab but it should work
+% end
     while trial <= numTrials
 
         % Word and color number
@@ -174,7 +185,7 @@ end
         % key-press
         if trial == 1
             Screen('TextSize', window, 80);
-            DrawFormattedText(window, 'Imagine the movement \n\n Press F8 To Begin',...
+            DrawFormattedText(window, strcat(Instruction,'\n\n Press F8 To Begin'),...
                 'center', 'center', black);
             Screen('Flip', window);
             KbF8 = KbName('f8');
@@ -220,13 +231,13 @@ end
                 q = q+1;
                 timedisappear = GetSecs;
             else
-                DrawFormattedText(window, strcat('Imagine Moving', '\n\n', char(theWord)), 'center', 'center', black); %draw the word from the word matrix
+                DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
                 [~, timeappear] = Screen('Flip', window);
                 pause(R(trial)) %hold for standard distribution of the stimulus time
                 timedisappear = GetSecs;
             end
         else
-            DrawFormattedText(window, strcat('Imagine Moving', '\n\n', char(theWord)), 'center', 'center', black); %draw the word from the word matrix
+            DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
             [~, timeappear] = Screen('Flip', window);
             pause(R(trial)) %hold for standard distribution of the stimulus time
             timedisappear = GetSecs;
@@ -257,7 +268,7 @@ end
     end
 
 respMat(1,6) = tBlockStart; %place the block start time in the top right corner of the resp matrix
-respMat(2,6) = blockcounter; %place a number indicating which session this block corresponds to
+
 
 % End of round screen. 
 Screen('TextSize', window, 80);
@@ -265,16 +276,37 @@ DrawFormattedText(window, 'Round Finished \n\n Press Any Key To Start the next r
     'center', 'center', black);
 Screen('Flip', window);
 
-%write to CSV and collate data. Take each block as a just in case
-block_name = strcat(session_name,'_block',num2str(blockcounter)); %name the last block
-csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',block_name,'.csv'),respMat);
-respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
+%name the last block. If this block number already exists look for however
+%many duplicates exist and stick a dupenumber on the end. the dupenumber
+%corresponds to however many blocks there might be. It's essentially a
+%failsafe to ensure I don't overwrite
+block_name = strcat(session_name,'_block1'); %name it block1 by default.
+block_name_dir = strcat(dir_name,block_name)
+if exist(block_name_dir, 'file') %if block1 exists, 
+    namesearch = strcat(dir_name, folder_name, '\', session_name,'_block','*'); %use wildcard to get the number that we should be at
+    dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
+    block_name = strcat(session_name,'_block',num2str(dupenumber));
+else
+    dupenumber = 1;
+end
 
+respMat(2,6) = dupenumber; %place a number indicating which session this block corresponds to
+
+%write to CSV and collate data. Take each block as a just in case
+csvwrite(strcat(dir_name,folder_name,'\',block_name,'.csv'),respMat);
+respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
 %collect the data from the session so far. This is the data I will
 %hopefully use
+export_session_name = strcat(session_name, '_allblocks_v1');
+export_session_name_dir = strcat(dir_name,export_session_name)
+if exist(export_session_name_dir, 'file')
+    namesearch2 = strcat(dir_name, folder_name, '\',session_name,'_allblocks','*');
+    dupenumber2 = length(dir(namesearch2))+1;
+    export_session_name = strcat(session_name, 'allblocks_v',num2str(dupenumber2))
+end
+
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
-csvwrite(strcat(dir_name,'subject',num2str(subnumber),'\',session_name,'.csv'),respMatSession);
-blockcounter = blockcounter + 1;
+csvwrite(strcat(dir_name,folder_name,'\',export_session_name,'.csv'),respMatSession);
 KbStrokeWait; 
 
 end

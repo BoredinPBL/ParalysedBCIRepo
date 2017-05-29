@@ -146,9 +146,11 @@ channelArray = 1:32;
 % uiwait(handles.figure1);
 
 clust = parcluster('local');
-subnumber = 1; sessionnumber = 1; stimulus_time = 4; eventnum = 1; startblock = 1;
-wordList = {'Walk', 'Lean Back', 'Left Hand', 'Right Hand', 'Left Foot', 'Right Foot', 'Think'}; 
-j = batch(clust, @prompter1function, 1, {subnumber,sessionnumber,startblock,stimulus_time,wordList}, 'Pool', 1);
+subnumber = 0; sessionnumber = 1; stimulus_time = 5; eventnum = 1; imaginedoractive = 'imagined';
+wordList = {'Imagine \n\n Walking', 'Imagine \n\n Leaning Back', 'Imagine Clenching Your \n\n Left Hand', 'Imagine Clenching Your \n\n Right Hand', 'Imagine Tapping Your \n\n Left Foot', 'Imagine Tapping Your \n\n Right Foot', 'Think'}; %Imagine List
+%if you uncomment the below, the code will prompt for active movements
+%wordList = {'Lean Right', 'Lean Left', 'Clench Your \n\n Left Hand', 'Clench Your \n\n Right Hand', 'Tap Your \n\n Left Foot', 'Tap Your \n\n Right Foot', 'Think'}; imaginedoractive = 'active';
+j = batch(clust, @prompter1function, 1, {subnumber,sessionnumber,stimulus_time,wordList,imaginedoractive}, 'Pool', 1);
 
 
 
