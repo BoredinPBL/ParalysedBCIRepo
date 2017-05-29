@@ -465,6 +465,7 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global rec;
             global saveBtn;
             rec = state;
+            
             set(saveBtn,'Enable','on');
         end
         
@@ -488,11 +489,26 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global saveBtn;
             global subnumber;
             global sessionnumber;
-            global eventnum
+            global dir_name
+            global imaginedoractive
+            
+            folder_name = strcat('subject',num2str(subnumber));
             
             x = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber),'');
             %inputdlg('Save Recording As (.poly5)','File Name', [1 50]);
             
+            
+            session_name = strcat('prompttiming_', imaginedoractive,'_sub',num2str(subnumber),'_session',num2str(sessionnumber));
+            block_name = strcat(session_name,'_block1'); %name it block1 by default.
+            block_name_dir = strcat(dir_name,folder_name,'\',block_name,'.csv');
+            
+            if exist(block_name_dir, 'file') %if block1 exists, 
+                namesearch = strcat(dir_name, folder_name, '\', session_name,'_block','*'); %use wildcard to get the number that we should be at
+                dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
+                x = strcat(x,'block',dupenumber);
+            else
+                x = strcat(x,'block1');
+            end
             
                                                   
             y = strcat(x, '.Poly5');

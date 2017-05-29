@@ -1,4 +1,4 @@
-function trigger = prompter1function(subnumber,sessionnumber,stimulus_time,wordList,imaginedoractive)
+function trigger = prompter1function(subnumber,sessionnumber,stimulus_time,wordList,imaginedoractive,dir_name)
 
 %prompter1 is heavily dependent on PsychToolBox and you need to make sure
 %this is installed correctly. If using a laptop with an integrated and
@@ -79,10 +79,10 @@ grey = white * 0.5;
 
 %in this script the pause function is used to control the timing of
 %stimulus presentation. These parameters can be adjusted here:
-ready_time = 1;
-ready_stimulus_time = 1;
+ready_time = 0.2;
+ready_stimulus_time = 0.2;
 %stimulus_time = 4;
-break_time = 3;
+break_time = 0.2;
 
 %----------------------------------------------------------------------
 %                     Colors in words and RGB
@@ -132,14 +132,14 @@ respMat = zeros(numTrials,6); %6 rows so I can display the ready time in the res
 %subnumber = 1; sessionnumber = 1; %these are set as defaults. On in the
 %script, off in the function
 session_name = strcat('prompttiming_', imaginedoractive,'_sub',num2str(subnumber),'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
-dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %this effectively functions as the path to where things are going to be saved
+%dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %this effectively functions as the path to where things are going to be saved
 
 
 %ensure that there is a subject folder to save the results to. If there
 %isn't, create a subject folder
 folder_name = strcat('subject',num2str(subnumber)); %generate a string representing the folder name
-if exist(strcat(dir_name,folder_name), 'dir') %check for an existing folder
-    mkdir(fullfile(dir_name, (folder_name))); %if one doesn't exist already, generate the folder
+if ~exist(strcat(dir_name,folder_name), 'dir') %check for no existing folder
+    mkdir(fullfile(dir_name, folder_name)); %if one doesn't exist already, generate the folder
 end
 
 %----------------------------------------------------------------------
@@ -281,7 +281,7 @@ Screen('Flip', window);
 %corresponds to however many blocks there might be. It's essentially a
 %failsafe to ensure I don't overwrite
 block_name = strcat(session_name,'_block1'); %name it block1 by default.
-block_name_dir = strcat(dir_name,block_name)
+block_name_dir = strcat(dir_name,block_name);
 if exist(block_name_dir, 'file') %if block1 exists, 
     namesearch = strcat(dir_name, folder_name, '\', session_name,'_block','*'); %use wildcard to get the number that we should be at
     dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
@@ -298,11 +298,11 @@ respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and tha
 %collect the data from the session so far. This is the data I will
 %hopefully use
 export_session_name = strcat(session_name, '_allblocks_v1');
-export_session_name_dir = strcat(dir_name,export_session_name)
+export_session_name_dir = strcat(dir_name,export_session_name);
 if exist(export_session_name_dir, 'file')
     namesearch2 = strcat(dir_name, folder_name, '\',session_name,'_allblocks','*');
     dupenumber2 = length(dir(namesearch2))+1;
-    export_session_name = strcat(session_name, 'allblocks_v',num2str(dupenumber2))
+    export_session_name = strcat(session_name, 'allblocks_v',num2str(dupenumber2));
 end
 
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
