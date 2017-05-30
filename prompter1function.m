@@ -135,6 +135,14 @@ session_name = strcat('prompttiming_', imaginedoractive,'_sub',num2str(subnumber
 %dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %this effectively functions as the path to where things are going to be saved
 
 
+%check that the directory name has a slash on the end. If it doesn't, stick
+%it on there.
+if ~strcmp(dir_name(end), '\')
+    dir_name = strcat(dir_name,'\');
+end
+
+
+
 %ensure that there is a subject folder to save the results to. If there
 %isn't, create a subject folder
 folder_name = strcat('subject',num2str(subnumber)); %generate a string representing the folder name
@@ -259,12 +267,12 @@ end
 
         [keyIsDown,secs,keyCode] = KbCheck; %If a key is pressed during the disappearance of the stimulus, kill the screen
         KbEscape = KbName('escape'); %this will kill the prompting window
-        KbF12 = KbName ('f12'); %this will just end the block prematurely
+        KbF9 = KbName ('f9'); %this will just end the block prematurely
         
         if keyCode(KbEscape) > 0
             sca
             break
-        elseif keyCode(KbF12) > 0
+        elseif keyCode(KbF9) > 0
             break
         end
 
