@@ -79,10 +79,10 @@ grey = white * 0.5;
 
 %in this script the pause function is used to control the timing of
 %stimulus presentation. These parameters can be adjusted here:
-ready_time = 0.2;
-ready_stimulus_time = 0.2;
+ready_time = 1;
+ready_stimulus_time = 1;
 %stimulus_time = 4;
-break_time = 0.2;
+break_time = 3;
 
 %----------------------------------------------------------------------
 %                     Colors in words and RGB
@@ -189,9 +189,13 @@ end
                 'center', 'center', black);
             Screen('Flip', window);
             KbF8 = KbName('f8');
+            KbEscape = KbName('escape');
             while 1 == 1
                 [~,~,keyCode] = KbCheck;
                 if keyCode(KbF8) > 0
+                    break
+                elseif keyCode(KbEscape) > 0
+                    sca
                     break
                 end
                 pause(0.01)
@@ -272,7 +276,7 @@ respMat(1,6) = tBlockStart; %place the block start time in the top right corner 
 
 % End of round screen. 
 Screen('TextSize', window, 80);
-DrawFormattedText(window, 'Round Finished \n\n Press Any Key To Start the next round',...
+DrawFormattedText(window, 'Round Finished \n\n Press F9 to Start the next round',...
     'center', 'center', black);
 Screen('Flip', window);
 
@@ -281,7 +285,7 @@ Screen('Flip', window);
 %corresponds to however many blocks there might be. It's essentially a
 %failsafe to ensure I don't overwrite
 block_name = strcat(session_name,'_block1'); %name it block1 by default.
-block_name_dir = strcat(dir_name,block_name);
+block_name_dir = strcat(dir_name,folder_name,'\',block_name,'.csv');
 if exist(block_name_dir, 'file') %if block1 exists, 
     namesearch = strcat(dir_name, folder_name, '\', session_name,'_block','*'); %use wildcard to get the number that we should be at
     dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
@@ -298,18 +302,34 @@ respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and tha
 %collect the data from the session so far. This is the data I will
 %hopefully use
 export_session_name = strcat(session_name, '_allblocks_v1');
-export_session_name_dir = strcat(dir_name,export_session_name);
+export_session_name_dir = strcat(dir_name,folder_name,'\',export_session_name,'.csv');
 if exist(export_session_name_dir, 'file')
     namesearch2 = strcat(dir_name, folder_name, '\',session_name,'_allblocks','*');
     dupenumber2 = length(dir(namesearch2))+1;
-    export_session_name = strcat(session_name, 'allblocks_v',num2str(dupenumber2));
+    export_session_name = strcat(session_name, '_allblocks_v',num2str(dupenumber2));
 end
 
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
 csvwrite(strcat(dir_name,folder_name,'\',export_session_name,'.csv'),respMatSession);
-KbStrokeWait; 
+
+
+%this section causes the program to make the windows system noise every 4
+%seconds or so until the F9 key is pressed
+KbF9 = KbName('f9'); p =401;
+[~,~,keyCode] = KbCheck;
+while ~keyCode(KbF9) > 0
+[~,~,keyCode] = KbCheck;
+pause(0.01)
+p = p +1;
+if p > 400
+beep
+p = 1;
+end
+end
+
 
 end
+
 sca;
 
 end
