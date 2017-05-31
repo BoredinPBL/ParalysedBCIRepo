@@ -59,9 +59,9 @@ global numChannels;
 global filtType;
 global subnumber;
 global sessionnumber;
-global eventnum;
 global dir_name;
 global imaginedoractive;
+global clust;
 
 
 numChannels = 32;
@@ -147,13 +147,9 @@ channelArray = 1:32;
 % UIWAIT makes TMSiGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %set the path for where files should be saved here
 clust = parcluster('local');
-subnumber = 10; sessionnumber = 5; stimulus_time = 0.2; eventnum = 1; imaginedoractive = 'imagined';
-wordList = {'Imagine \n\nWalking', 'Imagine \n\nLeaning Back', 'Imagine Clenching Your \n\n Left Hand', 'Imagine Clenching Your \n\n Right Hand', 'Imagine Tapping Your \n\n Left Foot', 'Imagine Tapping Your \n\n Right Foot', 'Think'}; %Imagine List
-%if you uncomment the below, the code will prompt for active movements
-%wordList = {'Lean Right', 'Lean Left', 'Clench Your \n\n Left Hand', 'Clench Your \n\n Right Hand', 'Tap Your \n\n Left Foot', 'Tap Your \n\n Right Foot', 'Think'}; imaginedoractive = 'active';
-j = batch(clust, @prompter1function, 1, {subnumber,sessionnumber,stimulus_time,wordList,imaginedoractive,dir_name}, 'Pool', 1);
+dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %set the path for where files should be saved here
+subnumber = 10; sessionnumber = 5; imaginedoractive = 'imagined';
 
 
 

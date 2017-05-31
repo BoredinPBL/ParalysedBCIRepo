@@ -137,6 +137,7 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global FFT;
             global welchPSD;
             global tpBtn;
+            global promptBtn;
             if obj.is_visible
                 return;
             end
@@ -167,6 +168,9 @@ classdef RealTimePlot < TMSi.HiddenHandle
             stopRecBtn = uicontrol('Style', 'pushbutton', 'String', 'Stop Recording',...
                 'Position', [40 650 110 40],'fontunits','normalized','fontsize',0.3,...
                 'Callback', @obj.stopRec);
+            promptBtn = uicontrol('Style', 'pushbutton', 'String', 'Start Prompt',...
+                'Position', [40 800 110 40],'fontunits','normalized','fontsize',0.3,...
+                'Callback', @obj.startPrompt);
             welchPSD = uicontrol('Style', 'radiobutton', 'String', 'Welch PSD',...
                 'Position', [40 550 100 30],'fontunits','normalized','fontsize',0.5,...
                 'Callback', @obj.welchON);
@@ -431,20 +435,26 @@ classdef RealTimePlot < TMSi.HiddenHandle
             obj.window_buffer = nan(numel(obj.channels), ceil(obj.window_size * obj.sample_rate));
         end
         
+        function startPrompt(~,~,~)
+            global dir_name;
+            global subnumber;
+            global sessionnumber;
+            global imaginedoractive;
+            global promptBtn;
+            global clust;
+            set(promptBtn,'Enable','off');
+            j = batch(clust, @prompter, 0, {subnumber,sessionnumber,imaginedoractive,dir_name}, 'Pool', 1);
+            pause(20); %I put this here and it started working. I don't know why, but now I'm too scared to take it away
+        end
+        
+        
+        
         %-------------------Start Recording Samples Trigger------------------------
         function startRec(~,~,~)
             global rec;
             global startRecBtn;
             global stopRecBtn;
             global saveBtn;
-            KbF8 = KbName('f8');
-            while 1 == 1
-                [keyIsDown,secs,keyCode] = KbCheck;
-                if keyCode(KbF8) > 0
-                    break
-                end
-                pause(0.01)
-            end
             rec = 1;
             set(startRecBtn,'Enable','off');
             set(stopRecBtn,'Enable','on');
@@ -470,7 +480,7 @@ classdef RealTimePlot < TMSi.HiddenHandle
         end
         
         %--------------------------Stop recording--------------------------
-        function stopRec(~,~,~)
+        function stopRec(~,~,~) %function has been changed to trigger a resave
             global rec;
             global startRecBtn;
             global stopRecBtn;
@@ -1069,13 +1079,26 @@ classdef RealTimePlot < TMSi.HiddenHandle
         end
         
         function keyPressEvent(obj, src, ~)
-            %RESIZEEVENT - A callback that changes the downsample factor when resizing.
-            %
-            %   The downsample factor causes the data points to be reduced to 2 samples
-            %   per pixel on the screen.
-            
-%             key = get(gcf,'CurrentCharacter');
-%             fprintf('a button got pressed %s',key);
+            global rec;
+            global startRecBtn;
+            global stopRecBtn;
+            global saveBtn;
+            KbName('UnifyKeyNames') %initalise the psychtoolbox keyboard listener
+            [~,~,keyCode] = KbCheck;
+
+            KbF8 = KbName('f8');
+            KbF9 = KbName('f9');
+            if keyCode(KbF8) > 0
+                rec = 1;
+                set(startRecBtn,'Enable','off');
+                set(stopRecBtn,'Enable','on');
+                set(saveBtn,'Enable','off');
+            elseif keyCode(KbF9) > 0 && rec == 1
+               rec = 2;
+               set(startRecBtn,'Enable','off');
+               set(stopRecBtn,'Enable','off');
+               set(saveBtn,'Enable','off');
+            end
 
            
         end        
