@@ -97,7 +97,7 @@ for q = 1:length(wordList)
     mathtime = strcmp('Think',wordList(q));
     if mathtime == 1
         mathmodeactive = true;
-        mathword = q;
+        mathword = q; %determines which column of the wordlist corresponds to 'Think'
     end
 end
 

@@ -294,7 +294,7 @@ classdef RealTimePlot < TMSi.HiddenHandle
             set(stopRecBtn,'Enable','off');
             set(startRecBtn,'Enable','off');
             set(obj.figure, 'CloseRequestFcn', @obj.closeRequestEvent);
-            set(obj.figure, 'KeyReleaseFcn', @obj.keyReleaseEvent);
+            set(obj.figure, 'KeyPressFcn', @obj.keyPressEvent);
             set(obj.figure, 'ResizeFcn', @obj.resizeEvent);
             
             % ==================================================================
@@ -479,6 +479,7 @@ classdef RealTimePlot < TMSi.HiddenHandle
             set(startRecBtn,'Enable','off');
             set(stopRecBtn,'Enable','off');
             set(saveBtn,'Enable','off');
+            saveRecAs
         end
         
         %---------File operations related to saving the recording----------
@@ -489,36 +490,23 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global saveBtn;
             global subnumber;
             global sessionnumber;
-            global dir_name
-            global imaginedoractive
+            global imaginedoractive;
             
-            folder_name = strcat('subject',num2str(subnumber));
+            x = strcat('EEGsigs',imaginedoractive,'_subject',num2str(subnumber),'_session',num2str(sessionnumber));
             
-            x = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber),'');
-            %inputdlg('Save Recording As (.poly5)','File Name', [1 50]);
-            
-            
-            session_name = strcat('prompttiming_', imaginedoractive,'_sub',num2str(subnumber),'_session',num2str(sessionnumber));
-            block_name = strcat(session_name,'_block1'); %name it block1 by default.
-            block_name_dir = strcat(dir_name,folder_name,'\',block_name,'.csv');
-            
-            if exist(block_name_dir, 'file') %if block1 exists, 
-                namesearch = strcat(dir_name, folder_name, '\', session_name,'_block','*'); %use wildcard to get the number that we should be at
+            block_name = strcat(x,'_block1'); %name it block1 by default.
+            block_name_dir = strcat(pwd,'\',block_name,'.Poly5');
+            fprintf('%s', block_name_dir);
+
+            if exist(block_name_dir, 'file') %if block1 exists,
+                namesearch = strcat(pwd,'\',x,'_block','*'); %use wildcard to get the number that we should be at
                 dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
-                x = strcat(x,'block',dupenumber);
+                x = strcat(x,'_block',num2str(dupenumber));
             else
-                x = strcat(x,'block1');
+                x = block_name;
             end
             
-                                                  
             y = strcat(x, '.Poly5');
-            
-%             if exist(y, 'file')
-%                y = strcat(x,eventnum,'.Poly5'); %doesn't work currently,
-%                but hopefully we can prevent the file from being
-%                overwritten
-%                eventnum = eventnum + 1;
-%             end
             fileName = y;
             count = 0;
             set(startRecBtn,'Enable','on');
@@ -1080,6 +1068,18 @@ classdef RealTimePlot < TMSi.HiddenHandle
             end
         end
         
+        function keyPressEvent(obj, src, ~)
+            %RESIZEEVENT - A callback that changes the downsample factor when resizing.
+            %
+            %   The downsample factor causes the data points to be reduced to 2 samples
+            %   per pixel on the screen.
+            
+%             key = get(gcf,'CurrentCharacter');
+%             fprintf('a button got pressed %s',key);
+
+           
+        end        
+
         function downsample = downSamplingFactor(obj, width, height)
             %DOWNSAMPLINGFACTOR - A dynamic factor that should range somewhere between 15 and 1.
             

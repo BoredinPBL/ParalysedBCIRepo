@@ -22,7 +22,7 @@ function varargout = TMSiGUI(varargin)
 
 % Edit the above text to modify the response to help TMSiGUI
 
-% Last Modified by GUIDE v2.5 06-Jan-2017 18:06:32
+% Last Modified by GUIDE v2.5 31-May-2017 12:22:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,7 +66,7 @@ global imaginedoractive;
 
 numChannels = 32;
 filtType = 'BPF';
-addpath('C:\Users\shielst\ParalysedSubjectProject\tmsiMatlabInterface-clone\eeglab13_6_5b');
+addpath(strcat(pwd,'\eeglab13_6_5b')); %combine the working directory with that of the eeglab folder. 
 eeglab;
 close;
 channelList = {'Ch1', 'Ch2', 'Ch3', 'Ch4', 'Ch5', 'Ch6', 'Ch7', 'Ch8', 'Ch9', 'Ch10',...
@@ -1985,3 +1985,4 @@ elseif numChannels == 64
     fclose(fileID);
     fclose(tempfid);
 end
+
