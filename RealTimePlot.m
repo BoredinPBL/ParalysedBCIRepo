@@ -455,10 +455,13 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global startRecBtn;
             global stopRecBtn;
             global saveBtn;
+            global timemarker;
             rec = 1;
             set(startRecBtn,'Enable','off');
             set(stopRecBtn,'Enable','on');
             set(saveBtn,'Enable','off');
+            sessionstart = GetSecs;
+            dlmwrite(strcat(timemarker,'.txt'),sessionstart,'precision',15);
         end
         
         %-------------Send Parametric Value of the state of Recording------
@@ -501,9 +504,11 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global subname;
             global sessionnumber;
             global imaginedoractive;
+            global timemarker;
             
             x = strcat('EEGsigs',imaginedoractive,'_subject',subname,'_session',num2str(sessionnumber));
             
+            timemarker = strcat(x,'_timemarker1');
             block_name = strcat(x,'_block1'); %name it block1 by default.
             block_name_dir = strcat(pwd,'\',block_name,'.Poly5');
             fprintf('%s', block_name_dir);
@@ -512,6 +517,7 @@ classdef RealTimePlot < TMSi.HiddenHandle
                 namesearch = strcat(pwd,'\',x,'_block','*'); %use wildcard to get the number that we should be at
                 dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
                 x = strcat(x,'_block',num2str(dupenumber));
+                timemarker = strcat(x,'_timemarker',num2str(dupenumber));
             else
                 x = block_name;
             end
@@ -1083,16 +1089,19 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global startRecBtn;
             global stopRecBtn;
             global saveBtn;
+            global timemarker;
             KbName('UnifyKeyNames') %initalise the psychtoolbox keyboard listener
             [~,~,keyCode] = KbCheck;
 
             KbF8 = KbName('f8');
             KbF9 = KbName('f9');
-            if keyCode(KbF8) > 0
+            if keyCode(KbF8) > 0 && rec ~= 1
                 rec = 1;
                 set(startRecBtn,'Enable','off');
                 set(stopRecBtn,'Enable','on');
                 set(saveBtn,'Enable','off');
+                sessionstart = GetSecs;
+                dlmwrite(strcat(timemarker,'.txt'),sessionstart,'precision',15);
             elseif keyCode(KbF9) > 0 && rec == 1
                rec = 2;
                set(startRecBtn,'Enable','off');

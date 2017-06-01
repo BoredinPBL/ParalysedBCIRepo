@@ -332,7 +332,7 @@ respMat(2,6) = dupenumber; %place a number indicating which session this block c
 
 %write to dlm and collate data. Take each block as a just in case. dlm
 %rather than csv as we need more significant figures
-dlmwrite(strcat(dir_name,folder_name,'\',block_name,'.txt'),respMat,'precision',10);
+dlmwrite(strcat(dir_name,folder_name,'\',block_name,'.txt'),respMat,'precision',15);
 respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
 %collect the data from the session so far. This is the data I will
 %hopefully use
@@ -345,7 +345,7 @@ if exist(export_session_name_dir, 'file')
 end
 
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
-dlmwrite(strcat(dir_name,folder_name,'\',export_session_name,'.txt'),respMatSession,'precision',10);
+dlmwrite(strcat(dir_name,folder_name,'\',export_session_name,'.txt'),respMatSession,'precision',15);
 
 
 %this section causes the program to make the windows system noise every 4
