@@ -319,7 +319,7 @@ Screen('Flip', window);
 %corresponds to however many blocks there might be. It's essentially a
 %failsafe to ensure I don't overwrite
 block_name = strcat(session_name,'_block1'); %name it block1 by default.
-block_name_dir = strcat(dir_name,folder_name,'\',block_name,'.csv');
+block_name_dir = strcat(dir_name,folder_name,'\',block_name,'.txt');
 if exist(block_name_dir, 'file') %if block1 exists, 
     namesearch = strcat(dir_name, folder_name, '\', session_name,'_block','*'); %use wildcard to get the number that we should be at
     dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
@@ -330,13 +330,14 @@ end
 
 respMat(2,6) = dupenumber; %place a number indicating which session this block corresponds to
 
-%write to CSV and collate data. Take each block as a just in case
-csvwrite(strcat(dir_name,folder_name,'\',block_name,'.csv'),respMat);
+%write to dlm and collate data. Take each block as a just in case. dlm
+%rather than csv as we need more significant figures
+dlmwrite(strcat(dir_name,folder_name,'\',block_name,'.txt'),respMat,'precision',10);
 respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
 %collect the data from the session so far. This is the data I will
 %hopefully use
 export_session_name = strcat(session_name, '_allblocks_v1');
-export_session_name_dir = strcat(dir_name,folder_name,'\',export_session_name,'.csv');
+export_session_name_dir = strcat(dir_name,folder_name,'\',export_session_name,'.txt');
 if exist(export_session_name_dir, 'file')
     namesearch2 = strcat(dir_name, folder_name, '\',session_name,'_allblocks','*');
     dupenumber2 = length(dir(namesearch2))+1;
@@ -344,7 +345,7 @@ if exist(export_session_name_dir, 'file')
 end
 
 respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
-csvwrite(strcat(dir_name,folder_name,'\',export_session_name,'.csv'),respMatSession);
+dlmwrite(strcat(dir_name,folder_name,'\',export_session_name,'.txt'),respMatSession,'precision',10);
 
 
 %this section causes the program to make the windows system noise every 4
