@@ -57,7 +57,7 @@ global channelList;
 global chanPopupHandles;
 global numChannels;
 global filtType;
-global subnumber;
+global subname;
 global sessionnumber;
 global dir_name;
 global imaginedoractive;
@@ -149,7 +149,7 @@ channelArray = 1:32;
 
 clust = parcluster('local');
 dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %set the path for where files should be saved here
-subnumber = 10; sessionnumber = 5; imaginedoractive = 'imagined';
+subname = 'JB'; sessionnumber = 20170601; imaginedoractive = 'imagined';
 
 
 

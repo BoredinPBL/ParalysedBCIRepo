@@ -437,13 +437,13 @@ classdef RealTimePlot < TMSi.HiddenHandle
         
         function startPrompt(~,~,~)
             global dir_name;
-            global subnumber;
+            global subname;
             global sessionnumber;
             global imaginedoractive;
             global promptBtn;
             global clust;
             set(promptBtn,'Enable','off');
-            j = batch(clust, @prompter, 0, {subnumber,sessionnumber,imaginedoractive,dir_name}, 'Pool', 1);
+            j = batch(clust, @prompter, 0, {subname,sessionnumber,imaginedoractive,dir_name}, 'Pool', 1);
             pause(20); %I put this here and it started working. I don't know why, but now I'm too scared to take it away
         end
         
@@ -498,11 +498,11 @@ classdef RealTimePlot < TMSi.HiddenHandle
             global count;
             global startRecBtn;
             global saveBtn;
-            global subnumber;
+            global subname;
             global sessionnumber;
             global imaginedoractive;
             
-            x = strcat('EEGsigs',imaginedoractive,'_subject',num2str(subnumber),'_session',num2str(sessionnumber));
+            x = strcat('EEGsigs',imaginedoractive,'_subject',subname,'_session',num2str(sessionnumber));
             
             block_name = strcat(x,'_block1'); %name it block1 by default.
             block_name_dir = strcat(pwd,'\',block_name,'.Poly5');

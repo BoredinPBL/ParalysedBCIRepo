@@ -1,4 +1,4 @@
-function prompter(subnumber,sessionnumber,imaginedoractive,dir_name)
+function prompter(subname,sessionnumber,imaginedoractive,dir_name)
 
 %prompter1 is heavily dependent on PsychToolBox and you need to make sure
 %this is installed correctly. If using a laptop with an integrated and
@@ -28,7 +28,7 @@ function prompter(subnumber,sessionnumber,imaginedoractive,dir_name)
 %continuous. 
 
 %input names:
-%subnumber = the subject number, this defines the folder where the timing
+%subname = the subject number, this defines the folder where the timing
 %information wil be saved
 %sessionnumber = the session number with this subject
 %startblock = in the case of having to open and close the program multiple
@@ -72,6 +72,8 @@ grey = white * 0.5;
 
 [xCenter, yCenter] = RectCenter(windowRect);
 
+Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
+
 
 %----------------------------------------------------------------------
 %                       Timing Information
@@ -79,10 +81,15 @@ grey = white * 0.5;
 
 %in this script the pause function is used to control the timing of
 %stimulus presentation. These parameters can be adjusted here:
-ready_time = 1;
-ready_stimulus_time = 1;
-stimulus_time = 4;
-break_time = 3;
+ready_time = 2; %set the median ready time
+cue_time = 4; %set the median cue time
+jitter = 1; %set the jitter, i.e. the timing will deviate by half this value
+go_time = 3; %the amount of time that go is shown
+break_time = 3; %the amount of time between trials
+
+%----------------------------------------------------------------------
+%                       Set the mode of the prompter
+%----------------------------------------------------------------------
 
 if strcmp(imaginedoractive,'imagined')
     Instruction = 'Imagine the Movement';
@@ -95,6 +102,15 @@ else
     Instruction = 'Imagine the Movement';
 end
 
+
+%----------------------------------------------------------------------
+%                     Create a fixation cross
+%----------------------------------------------------------------------
+fixCrossDimPix = 40;
+xCoords = [-fixCrossDimPix fixCrossDimPix 0 0];
+yCoords = [0 0 -fixCrossDimPix fixCrossDimPix];
+allCoords = [xCoords; yCoords];
+lineWidthPix = 4;
 
 %----------------------------------------------------------------------
 %                     Colors in words and RGB
@@ -123,6 +139,11 @@ condMatrixBase = sort(repmat(1:max(length(wordList)), 1,trialsPerCondition )); %
 % Get the size of the matrix
 [~, numTrials] = size(condMatrixBase);
 
+%generate the timing values
+Rready = ready_time-(jitter/2):(jitter/(numTrials-1)):ready_time+(jitter/2);
+Rcue = cue_time-(jitter/2):(jitter/(numTrials-1)):cue_time+(jitter/2);
+Rbreak = break_time-(jitter/2):(jitter/(numTrials-1)):break_time+(jitter/2);
+
 %----------------------------------------------------------------------
 %                     Make a response matrix and name the folder
 %----------------------------------------------------------------------
@@ -132,7 +153,7 @@ respMat = zeros(numTrials,6); %6 rows so I can display the ready time in the res
 %name the session
 %subnumber = 1; sessionnumber = 1; %these are set as defaults. On in the
 %script, off in the function
-session_name = strcat('prompttiming_', imaginedoractive,'_sub',num2str(subnumber),'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
+session_name = strcat('prompttiming_', imaginedoractive,'_sub',subname,'_session',num2str(sessionnumber)); %you may want to plant this in the TMSI code
 %dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %this effectively functions as the path to where things are going to be saved
 
 
@@ -146,7 +167,7 @@ end
 
 %ensure that there is a subject folder to save the results to. If there
 %isn't, create a subject folder
-folder_name = strcat('subject',num2str(subnumber)); %generate a string representing the folder name
+folder_name = strcat('subject',subname); %generate a string representing the folder name
 if ~exist(strcat(dir_name,folder_name), 'dir') %check for no existing folder
     mkdir(fullfile(dir_name, folder_name)); %if one doesn't exist already, generate the folder
 end
@@ -159,31 +180,28 @@ end
 
 respMatSession = []; %the response matrix for the session starts empty
 while 1 == 1
+%create a bunch of shuffles
 shuffler = Shuffle(1:numTrials);
+shuffler2 = Shuffle(1:numTrials);
+shuffler3 = Shuffle(1:numTrials);
+shuffler4 = Shuffle(1:numTrials);
+
 condMatrixShuffled = condMatrixBase(:, shuffler);    
 trial = 1;
 %Create a bell curve of durations with equal dimensions to the condition
 %matrix
-R = normrnd(stimulus_time,1,[1 numTrials]);
+
+%apply the other 3 shuffles to the jitter effect
+Rready = Rready(:, shuffler2); 
+Rcue = Rcue(:, shuffler3); 
+Rbreak = Rbreak(:, shuffler4); 
+
 q = 1; %reset the math counter
 %if mathmode is active, generate a matrix of random numbers
 if mathmodeactive == true
     randMat = randi(9,[trialsPerCondition, 2]);
 end
 
-fprintf('made it this far');
-
-% %detect whether a poly5 file already exists, if so, move it
-% name = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber),'.Poly5');                             
-% if exist(name, 'file') 
-%     nopoly5 = strcat('EEGsigs','_subject',num2str(subnumber),'_session',num2str(sessionnumber));
-%     nopoly5 = strcat(nopoly5, '_block' ,num2str(blockcounter-1)); %this can potentially give a file a zero, if this is happening you have stuffed up somewhere.
-%     newname = strcat(nopoly5, '.Poly5');
-%     %this code should move the poly5 file produced by TMSI to the folder
-%     %where the prompting code is stored and prevent me from saving over it
-%     %:D
-%     movefile(name, strcat(dir_name, fold_name, '\', newname)) %this line hasn't been validated in the lab but it should work
-% end
     while trial <= numTrials
 
         % Word and color number
@@ -204,6 +222,7 @@ fprintf('made it this far');
             while 1 == 1
                 [~,~,keyCode] = KbCheck;
                 if keyCode(KbF8) > 0
+                    tBlockStart = GetSecs; %take the time that the block started at
                     break
                 elseif keyCode(KbEscape) > 0
                     sca
@@ -211,62 +230,66 @@ fprintf('made it this far');
                 end
                 pause(0.01)
             end
-        end
-
-        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
-        Screen('Flip', window);
-        pause(break_time)
-
-        % Draw the fixation point
-        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
-        % Flip to the screen
-        [~, time] = Screen('Flip', window);
-
-        if trial == 1
-            tBlockStart = GetSecs;
-            trigger = 1;
+            
+            % create a one off fixation cross that gives us time for the
+            % signals to settle
+            Screen('DrawLines', window, allCoords,...
+                lineWidthPix, black, [xCenter yCenter], 2);
+            Screen('Flip', window);
+            pause(5)
         end
 
         % Draw the ready and take a time marker
 
         DrawFormattedText(window, 'Ready?','center', 'center', black);
         [~, readyappear] = Screen('Flip', window);
-        pause(ready_time)
+        pause(Rready(trial))
 
-        % Draw the fixation point
-        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
-        [~, readydisappear] = Screen('Flip', window);
-        pause(ready_stimulus_time)
-        
         if mathmodeactive == true
             if wordNum == mathword
-                DrawFormattedText(window, strcat('Calculate', '\n\n',num2str(randMat(q,1)),'+',num2str(randMat(q,2)),'='), 'center', 'center', black); %draw the word from the word matrix
-                [~, timeappear] = Screen('Flip', window);
-                pause(R(trial)) %hold for standard distribution of the stimulus time
+                DrawFormattedText(window, 'Calculate', 'center', 'center', black); %draw the word from the word matrix
+                [~, cueappear] = Screen('Flip', window);
+                pause(Rcue(trial)) %hold for standard distribution of the stimulus time  
+                
+                DrawFormattedText(window, strcat(num2str(randMat(q,1)),'+',num2str(randMat(q,2)),'='), 'center', 'center', black); %draw the word from the word matrix
+                [~, goappear] = Screen('Flip', window);
+                pause(go_time)
                 q = q+1;
-                timedisappear = GetSecs;
+                godisappear = GetSecs;
             else
                 DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
-                [~, timeappear] = Screen('Flip', window);
-                pause(R(trial)) %hold for standard distribution of the stimulus time
-                timedisappear = GetSecs;
+                [~, cueappear] = Screen('Flip', window);
+                pause(Rcue(trial)) %hold for standard distribution of the stimulus time
+                
+                DrawFormattedText(window, 'Go', 'center', 'center', black); %draw the word from the word matrix
+                [~, goappear] = Screen('Flip', window);
+                pause(go_time)
+                godisappear = GetSecs;
             end
         else
-            DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
-            [~, timeappear] = Screen('Flip', window);
-            pause(R(trial)) %hold for standard distribution of the stimulus time
-            timedisappear = GetSecs;
+                DrawFormattedText(window, char(theWord), 'center', 'center', black); %draw the word from the word matrix
+                [~, cueappear] = Screen('Flip', window);
+                pause(Rcue(trial)) %hold for standard distribution of the stimulus time
+                
+                DrawFormattedText(window, 'Go', 'center', 'center', black); %draw the word from the word matrix
+                [~, goappear] = Screen('Flip', window);
+                pause(go_time)
+                godisappear = GetSecs;
         end
+        
+        Screen('DrawLines', window, allCoords,...
+            lineWidthPix, black, [xCenter yCenter], 2);
+        Screen('Flip', window);
+        pause(Rbreak(trial))
+       
 
         %fill the response matrix
-        respMat(trial, 1) = readyappear;
-        respMat(trial, 2) = readydisappear;
-        respMat(trial, 3) = wordNum;
-        respMat(trial, 4) = timeappear;
-        respMat(trial, 5) = timedisappear;
+        respMat(trial, 1) = wordNum;
+        respMat(trial, 2) = readyappear;
+        respMat(trial, 3) = cueappear;
+        respMat(trial, 4) = goappear;
+        respMat(trial, 5) = godisappear;
 
-        Screen('DrawDots', window, [xCenter; yCenter], 50, black, [], 2);
-        Screen('Flip', window);
 
         [keyIsDown,secs,keyCode] = KbCheck; %If a key is pressed during the disappearance of the stimulus, kill the screen
         KbEscape = KbName('escape'); %this will kill the prompting window
