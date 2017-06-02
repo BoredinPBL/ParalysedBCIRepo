@@ -1,13 +1,20 @@
 clear
 clc
 
-EEGsigs_subject0_session1_block4_imagined = TMSi.Poly5.read('EEGsigs_subject0_session1_block4-imagined.Poly5');
+block = 'EEGsigsimagined_subjectpilotYY_session20170602_block2';
+block_name = strcat(block, '.Poly5');
 
-Fs = EEGsigs_subject0_session1_block4_imagined.sample_rate;
-EEG_data = [EEGsigs_subject0_session1_block4_imagined.samples]';
-running_time = EEGsigs_subject0_session1_block4_imagined.time;
-timeofstudy = EEGsigs_subject0_session1_block4_imagined.date;
-channel_names = EEGsigs_subject0_session1_block4_imagined.channels;
+%time_marker_name = 'EEGsigsimagined_subjectpilotYY_session20170602_block2_timemarker2.txt';
+time_marker_name = strcat(block,'_timemarker.txt');
+prompt_start_time_marker = dlmread(time_marker_name);
+
+x = TMSi.Poly5.read(block_name);
+
+Fs = x.sample_rate;
+EEG_data = [x.samples]';
+running_time = x.time;
+timeofstudy = x.date;
+channel_names = x.channels;
 
 
 
@@ -21,4 +28,4 @@ end
 channel_names = channel_names_alone;
 
 
-save('EEGsigs_subject0_session1_block4_imagined','channel_names','EEG_data','Fs','running_time','timeofstudy')
+save(strcat(block,'.mat'),'channel_names','EEG_data','Fs','running_time','timeofstudy','prompt_start_time_marker')

@@ -149,7 +149,8 @@ channelArray = 1:32;
 
 clust = parcluster('local');
 dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %set the path for where files should be saved here
-subname = 'JB'; sessionnumber = 20170601; imaginedoractive = 'imagined';
+
+subname = 'pilotYY'; sessionnumber = 20170602; imaginedoractive = 'imagined';
 
 
 

@@ -508,16 +508,15 @@ classdef RealTimePlot < TMSi.HiddenHandle
             
             x = strcat('EEGsigs',imaginedoractive,'_subject',subname,'_session',num2str(sessionnumber));
             
-            timemarker = strcat(x,'_timemarker1');
             block_name = strcat(x,'_block1'); %name it block1 by default.
+            timemarker = strcat(block_name,'_timemarker1');
             block_name_dir = strcat(pwd,'\',block_name,'.Poly5');
-            fprintf('%s', block_name_dir);
 
             if exist(block_name_dir, 'file') %if block1 exists,
                 namesearch = strcat(pwd,'\',x,'_block','*'); %use wildcard to get the number that we should be at
                 dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
                 x = strcat(x,'_block',num2str(dupenumber));
-                timemarker = strcat(x,'_timemarker',num2str(dupenumber));
+                timemarker = strcat(x,'_timemarker');
             else
                 x = block_name;
             end
