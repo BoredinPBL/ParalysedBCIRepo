@@ -22,7 +22,7 @@ function varargout = TMSiGUI(varargin)
 
 % Edit the above text to modify the response to help TMSiGUI
 
-% Last Modified by GUIDE v2.5 31-May-2017 12:22:47
+% Last Modified by GUIDE v2.5 05-Jun-2017 16:12:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,8 +57,6 @@ global channelList;
 global chanPopupHandles;
 global numChannels;
 global filtType;
-global subname;
-global sessionnumber;
 global dir_name;
 global imaginedoractive;
 global clust;
@@ -150,7 +148,8 @@ channelArray = 1:32;
 clust = parcluster('local');
 dir_name = 'D:\UOMHESC_1748801\Collected_Data\'; %set the path for where files should be saved here
 
-subname = 'pilotYY'; sessionnumber = 20170602; imaginedoractive = 'imagined';
+%subname = 'pilotYY'; sessionnumber = 20170602; 
+imaginedoractive = 'imagined';
 
 
 
@@ -642,6 +641,19 @@ global channelArray;
 global filtType;
 global numChannels;
 global indexArray;
+global subname;
+global sessionnumber;
+
+if strcmp(get(handles.edit4,'String'),'Subject') || strcmp(get(handles.edit4,'String'),'')
+    warndlg('Don''t forget subject initials','Error');
+elseif strcmp(get(handles.edit5,'String'),'Session') || strcmp(get(handles.edit5,'String'),'')
+    warndlg('Don''t forget session number','Error');
+end
+
+subname = get(handles.edit4,'String');
+sessionnumber = str2double(get(handles.edit4,'String'));
+
+
 if get(handles.radiobutton4, 'Value')
     showChannelSubset(channelArray, numChannels, indexArray);
 else
@@ -1983,3 +1995,80 @@ elseif numChannels == 64
     fclose(tempfid);
 end
 
+
+
+
+function edit4_Callback(hObject, eventdata, handles)
+% hObject    handle to edit4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit4 as text
+%        str2double(get(hObject,'String')) returns contents of edit4 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit4_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit5_Callback(hObject, eventdata, handles)
+% hObject    handle to edit5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit5 as text
+%        str2double(get(hObject,'String')) returns contents of edit5 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit5_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popupmenu172.
+function popupmenu172_Callback(hObject, eventdata, handles)
+global imaginedoractive;
+
+% hObject    handle to popupmenu172 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu172 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu172
+contents = cellstr(get(hObject,'String'));
+if strcmp(contents,'Imagined')
+    imaginedoractive = 'imagined';
+elseif strcmp(contents,'Active')
+    imaginedoractive = 'active';
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu172_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu172 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
