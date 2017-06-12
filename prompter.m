@@ -1,4 +1,4 @@
-function prompter(subname,sessionnumber,imaginedoractive,dir_name)
+function prompter(subname,sessionnumber,imaginedoractive)
 
 %prompter1 is heavily dependent on PsychToolBox and you need to make sure
 %this is installed correctly. If using a laptop with an integrated and
@@ -31,14 +31,11 @@ function prompter(subname,sessionnumber,imaginedoractive,dir_name)
 %subname = the subject number, this defines the folder where the timing
 %information wil be saved
 %sessionnumber = the session number with this subject
-%startblock = in the case of having to open and close the program multiple
-%times, you can define what number block you are starting with. This should
-%prevent it from saving over old version
-%stimulustime = the median stimulus time, there is a standard deviation in
-%the display time
-%wordList = the list of words, needs to be a matrix of strings. If one
-%corresponds to 'Think', the program will display a random maths question
-%instead of the word 'Think'
+%imagined or active selects whether the word list will be the imagined one
+%or the active one
+%dir_name probably isn't needed any more
+
+
 
 %this version has an added function. If a word in the word list corresponds
 %to the word 'Think', the program will randomly generate a maths problem
@@ -91,9 +88,13 @@ break_time = 3; %the amount of time between trials
 %                       Set the mode of the prompter
 %----------------------------------------------------------------------
 
+trialsPerCondition = 6;  % 6 trials per class gives a total of 42 trials per block. Adjust to 7 if you drop a trial type
+
+
 if strcmp(imaginedoractive,'imagined')
     Instruction = 'Imagine the Movement';
     wordList = {'Imagine \n\nWalking', 'Imagine \n\nLeaning Back', 'Imagine Clenching Your \n\n Left Hand', 'Imagine Clenching Your \n\n Right Hand', 'Imagine Tapping Your \n\n Left Foot', 'Imagine Tapping Your \n\n Right Foot', 'Think'};
+    trialsPerCondition = 3; %if imagined is called, only run 3 trials per condition
 elseif strcmp(imaginedoractive,'active')
     Instruction = 'Follow the Instruction';
     wordList = {'Lean Right', 'Lean Left', 'Clench Your \n\n Left Hand', 'Clench Your \n\n Right Hand', 'Tap Your \n\n Left Foot', 'Tap Your \n\n Right Foot', 'Think'};
@@ -133,7 +134,7 @@ end
 Screen('Preference', 'DefaultFontSize', 150); %Font Size
 
 % Make the matrix which will determine our condition combinations
-trialsPerCondition = 6;  % 6 trials per class gives a total of 42 trials per block. Adjust to 7 if you drop a trial type
+
 condMatrixBase = sort(repmat(1:max(length(wordList)), 1,trialsPerCondition )); % original = condMatrixBase = sort(repmat(1:length(wordList), 1, max(length(wordList))));
 
 % Get the size of the matrix
@@ -159,18 +160,18 @@ session_name = strcat('prompttiming_', imaginedoractive,'_sub',subname,'_session
 
 %check that the directory name has a slash on the end. If it doesn't, stick
 %it on there.
-if ~strcmp(dir_name(end), '\')
-    dir_name = strcat(dir_name,'\');
-end
 
 
-
-%ensure that there is a subject folder to save the results to. If there
-%isn't, create a subject folder
-folder_name = strcat('subject',subname); %generate a string representing the folder name
-if ~exist(strcat(dir_name,folder_name), 'dir') %check for no existing folder
-    mkdir(fullfile(dir_name, folder_name)); %if one doesn't exist already, generate the folder
-end
+%% This section is now redundant, timing data is being saved to the running folder and will be moved by a post-session script
+% if ~strcmp(dir_name(end), '\')
+%     dir_name = strcat(dir_name,'\');
+% end
+% %ensure that there is a subject folder to save the results to. If there
+% %isn't, create a subject folder
+% folder_name = strcat('subject',subname); %generate a string representing the folder name
+% if ~exist(strcat(dir_name,folder_name), 'dir') %check for no existing folder
+%     mkdir(fullfile(dir_name, folder_name)); %if one doesn't exist already, generate the folder
+% end
 
 %----------------------------------------------------------------------
 %                       Experimental loop
@@ -307,21 +308,20 @@ end
 
 respMat(1,6) = tBlockStart; %place the block start time in the top right corner of the resp matrix
 
-
 % End of round screen. 
 Screen('TextSize', window, 80);
 DrawFormattedText(window, 'Round Finished \n\n Press F9 to Start the next round',...
     'center', 'center', black);
-Screen('Flip', window);
+[~, endsessiontime] = Screen('Flip', window);
 
 %name the last block. If this block number already exists look for however
 %many duplicates exist and stick a dupenumber on the end. the dupenumber
 %corresponds to however many blocks there might be. It's essentially a
 %failsafe to ensure I don't overwrite
 block_name = strcat(session_name,'_block1'); %name it block1 by default.
-block_name_dir = strcat(dir_name,folder_name,'\',block_name,'.txt');
+block_name_dir = strcat(block_name,'.txt');
 if exist(block_name_dir, 'file') %if block1 exists, 
-    namesearch = strcat(dir_name, folder_name, '\', session_name,'_block','*'); %use wildcard to get the number that we should be at
+    namesearch = strcat(session_name,'_block','*'); %use wildcard to get the number that we should be at
     dupenumber = length(dir(namesearch))+1; %effectively increment for the next block number
     block_name = strcat(session_name,'_block',num2str(dupenumber));
 else
@@ -329,24 +329,11 @@ else
 end
 
 respMat(2,6) = dupenumber; %place a number indicating which session this block corresponds to
+respMat(3,6) = endsessiontime;
 
 %write to dlm and collate data. Take each block as a just in case. dlm
 %rather than csv as we need more significant figures
-dlmwrite(strcat(dir_name,folder_name,'\',block_name,'.txt'),respMat,'precision',15);
-respMat(numTrials+1,:) = 10; % Implant a marker that the block has ended and that there is a break
-%collect the data from the session so far. This is the data I will
-%hopefully use
-export_session_name = strcat(session_name, '_allblocks_v1');
-export_session_name_dir = strcat(dir_name,folder_name,'\',export_session_name,'.txt');
-if exist(export_session_name_dir, 'file')
-    namesearch2 = strcat(dir_name, folder_name, '\',session_name,'_allblocks','*');
-    dupenumber2 = length(dir(namesearch2))+1;
-    export_session_name = strcat(session_name, '_allblocks_v',num2str(dupenumber2));
-end
-
-respMatSession = [respMatSession; respMat]; %move the block into the overall session response matrix
-dlmwrite(strcat(dir_name,folder_name,'\',export_session_name,'.txt'),respMatSession,'precision',15);
-
+dlmwrite(strcat(block_name,'.txt'),respMat,'precision',15);
 
 %this section causes the program to make the windows system noise every 4
 %seconds or so until the F9 key is pressed
